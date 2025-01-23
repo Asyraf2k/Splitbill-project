@@ -1,4 +1,4 @@
-# belajar
+# SplitBills
 
 A new Flutter project.
 
