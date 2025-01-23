@@ -1,0 +1,273 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+class LandingPage extends StatelessWidget {
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('token'); // Hapus token dari SharedPreferences
+
+    // Arahkan pengguna kembali ke halaman login
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  Future<String> _getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token != null) {
+      // Contoh: Mengembalikan username dari token atau logika lainnya
+      return 'User'; // Ganti dengan logika decoding token jika diperlukan
+    }
+
+    return 'Guest';
+  }
+
+  Future<String> _getEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+
+    if (email != null) {
+      return email;
+    }
+
+    return 'email@example.com';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.grey[100],
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 16.0),
+            FutureBuilder<List<String>>(
+              future: Future.wait([_getUsername(), _getEmail()]),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading data'));
+                }
+                if (snapshot.hasData) {
+                  final username = snapshot.data![0];
+                  final email = snapshot.data![1];
+                  return _buildProfileCard(username, email);
+                }
+                return const Center(child: Text('No data available'));
+              },
+            ),
+            const SizedBox(height: 16.0),
+            _buildPromoCard(),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildMenu(
+                      icon: FontAwesomeIcons.gift, label: 'Subscription'),
+                  _buildMenu(
+                      icon: FontAwesomeIcons.history, label: 'Riwayat Pesanan'),
+                  _buildMenu(
+                      icon: FontAwesomeIcons.mapMarkerAlt,
+                      label: 'Alamat Tersimpan'),
+                  _buildMenu(
+                      icon: FontAwesomeIcons.ticketAlt, label: 'Voucher'),
+                  _buildMenu(
+                      icon: FontAwesomeIcons.handshake,
+                      label: 'Loyalty Membership'),
+                  _buildMenu(icon: FontAwesomeIcons.users, label: 'Referral'),
+                  _buildMenu(
+                      icon: FontAwesomeIcons.headset, label: 'Jiwa Care'),
+                  _buildMenu(
+                      icon: FontAwesomeIcons.lock, label: 'Kebijakan Privasi'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.purple,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(FontAwesomeIcons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FontAwesomeIcons.utensils),
+            label: 'Menu',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FontAwesomeIcons.receipt),
+            label: 'Pesanan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FontAwesomeIcons.user),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'jiwa+',
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileCard(String username, String email) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 6.0,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            child: Icon(
+              FontAwesomeIcons.user,
+              color: Colors.purple[700],
+              size: 20.0,
+            ),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  username,
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  email,
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    fontSize: 14.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            FontAwesomeIcons.pen,
+            color: Colors.purple[700],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPromoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.purple[700],
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: const [
+          Text(
+            'Undang teman dan dapatkan Voucher 50%',
+            style: TextStyle(
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+          ),
+          Icon(
+            FontAwesomeIcons.shareAlt,
+            color: Color.fromARGB(255, 0, 0, 0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenu({
+    required IconData icon,
+    required String label,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.3),
+              blurRadius: 6.0,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.red[500],
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 16.0,
+              ),
+            ),
+            const SizedBox(width: 16.0),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+            ),
+            Icon(
+              FontAwesomeIcons.chevronRight,
+              color: const Color.fromARGB(255, 0, 0, 0),
+              size: 16.0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
